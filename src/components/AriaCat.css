@@ -1,0 +1,974 @@
+.aria-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+  background: #0a0a0a;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Effet CRT */
+.aria-container .crt-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 50;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0px,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+}
+
+.aria-container .crt-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}
+
+.aria-container .crt-flicker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 51;
+  opacity: 0;
+  background: rgba(0, 255, 255, 0.03);
+  animation: crtFlicker 0.1s infinite;
+}
+
+@keyframes crtFlicker {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.evil .crt-flicker {
+  background: rgba(255, 0, 0, 0.03);
+  animation: evilFlicker 0.15s infinite, glitchFlash 4s ease-in-out infinite;
+}
+
+@keyframes evilFlicker {
+  0% { opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes glitchFlash {
+  0%, 5%, 22%, 27%, 47%, 52%, 72%, 77%, 97%, 100% {
+    background: rgba(255, 0, 0, 0.03);
+  }
+  1% { background: rgba(255, 255, 255, 0.2); }
+  2% { background: rgba(255, 0, 0, 0.15); }
+  3% { background: rgba(0, 255, 255, 0.12); }
+  23% { background: rgba(255, 0, 255, 0.12); }
+  24% { background: rgba(255, 255, 255, 0.15); }
+  25% { background: rgba(255, 0, 0, 0.1); }
+  48% { background: rgba(255, 255, 255, 0.25); }
+  49% { background: rgba(0, 255, 255, 0.15); }
+  50% { background: rgba(255, 0, 255, 0.15); }
+  73% { background: rgba(255, 255, 255, 0.2); }
+  74% { background: rgba(255, 0, 0, 0.15); }
+  75% { background: rgba(0, 255, 255, 0.12); }
+}
+
+/* Grille de fond style terminal */
+.aria-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+/* Cercles orbitaux */
+.aria-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  border-radius: 50%;
+  animation: orbit-rotate 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes orbit-rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+
+.aria-cat-wrapper {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: float 3s ease-in-out infinite;
+  z-index: 5;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-10px);
+  }
+}
+
+.aria-cat-wrapper.thinking {
+  animation: float 1.5s ease-in-out infinite;
+}
+
+.aria-cat-svg {
+  width: 400px;
+  height: 360px;
+  color: #00ffff;
+  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.6));
+  z-index: 1;
+  position: relative;
+}
+
+.cat-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw 2s ease forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Oeil unique style visière */
+.eye {
+  opacity: 1;
+  transition: opacity 0.1s ease;
+}
+
+.eye.blink {
+  opacity: 0;
+}
+
+.eye-closed {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.eye-closed.show {
+  opacity: 1;
+}
+
+/* Pupille - contrôlée par le face tracking */
+.eye-pupil {
+  transform-origin: center;
+}
+
+/* Effet de glow sur l'oeil en mode thinking */
+.thinking .eye {
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
+}
+
+/* Moustaches animées */
+.whisker {
+  transform-origin: center;
+  animation: whiskerTwitch 4s ease-in-out infinite;
+}
+
+.whisker-1, .whisker-4 {
+  animation-delay: 0s;
+}
+
+.whisker-2, .whisker-5 {
+  animation-delay: 0.1s;
+}
+
+.whisker-3, .whisker-6 {
+  animation-delay: 0.2s;
+}
+
+@keyframes whiskerTwitch {
+  0%, 90%, 100% {
+    transform: rotate(0deg);
+  }
+  93% {
+    transform: rotate(2deg);
+  }
+  96% {
+    transform: rotate(-2deg);
+  }
+}
+
+/* Glow effect */
+.aria-glow {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+  z-index: 0;
+}
+
+.thinking .aria-glow {
+  animation: pulse 1s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255, 51, 51, 0.3) 0%, transparent 70%);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* Titre */
+.aria-title {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0;
+  letter-spacing: 0.8em;
+  display: flex;
+  gap: 0.2em;
+  text-transform: uppercase;
+}
+
+.aria-letter {
+  display: inline-block;
+  color: #00ffff;
+  text-shadow:
+    0 0 10px rgba(0, 255, 255, 0.8),
+    0 0 20px rgba(0, 255, 255, 0.5),
+    0 0 30px rgba(0, 255, 255, 0.3);
+  animation: letterGlitch 4s ease-in-out infinite;
+}
+
+.aria-letter:nth-child(1) { animation-delay: 0s; }
+.aria-letter:nth-child(2) { animation-delay: 0.1s; }
+.aria-letter:nth-child(3) { animation-delay: 0.2s; }
+.aria-letter:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes letterGlitch {
+  0%, 90%, 100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  92% {
+    opacity: 0.8;
+    transform: translateX(-2px);
+  }
+  94% {
+    opacity: 1;
+    transform: translateX(2px);
+  }
+  96% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+}
+
+/* Status box style terminal */
+.aria-message-box {
+  background: rgba(0, 20, 20, 0.9);
+  border: 1px solid #00ffff;
+  border-radius: 0;
+  padding: 1rem 1.5rem;
+  max-width: 500px;
+  min-height: 3rem;
+  margin-top: 2rem;
+  position: relative;
+  box-shadow:
+    0 0 10px rgba(0, 255, 255, 0.3),
+    inset 0 0 20px rgba(0, 255, 255, 0.05);
+}
+
+.aria-message-box::before {
+  content: '# STATUS';
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #0a0a0a;
+  padding: 0 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.7rem;
+  color: #00ffff;
+  letter-spacing: 2px;
+}
+
+.aria-message {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  color: #00ffff;
+  margin: 0;
+  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.aria-cursor {
+  display: inline-block;
+  animation: blink 0.8s step-end infinite;
+  color: #ff3333;
+  margin-left: 2px;
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+.aria-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+  color: #ff3333;
+}
+
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
+}
+
+/* Scanline effect */
+.aria-container .scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0, 255, 255, 0.1);
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+  z-index: 100;
+}
+
+@keyframes scanline {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* ============================================
+   SPEAK BUTTON
+   ============================================ */
+.speak-btn {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 2rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  border: 2px solid #00ffff;
+  background: rgba(0, 20, 20, 0.9);
+  color: #00ffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  z-index: 10;
+}
+
+.speak-btn:hover {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+}
+
+.speak-btn.active {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+  animation: btnPulse 0.3s ease-in-out infinite;
+}
+
+.speak-btn.evil {
+  border-color: #8b0000;
+  color: #8b0000;
+  box-shadow: 0 0 15px rgba(139, 0, 0, 0.3);
+}
+
+.speak-btn.evil:hover {
+  background: rgba(139, 0, 0, 0.1);
+  box-shadow: 0 0 25px rgba(139, 0, 0, 0.5);
+}
+
+.speak-btn.evil.active {
+  background: rgba(139, 0, 0, 0.2);
+  box-shadow: 0 0 30px rgba(139, 0, 0, 0.8);
+}
+
+@keyframes btnPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+}
+
+/* ============================================
+   SPEAKING ANIMATION
+   ============================================ */
+.aria-cat-wrapper.speaking .aria-cat-svg {
+  animation: speakingPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes speakingPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.6));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 40px rgba(0, 255, 255, 1));
+    transform: scale(1.03);
+  }
+}
+
+.aria-cat-wrapper.speaking .aria-glow {
+  animation: speakingGlow 0.8s ease-in-out infinite;
+}
+
+@keyframes speakingGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.9;
+  }
+}
+
+/* Evil speaking */
+.evil .aria-cat-wrapper.speaking .aria-cat-svg {
+  animation: speakingPulseEvil 0.8s ease-in-out infinite;
+}
+
+@keyframes speakingPulseEvil {
+  0%, 100% {
+    filter: drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 50px rgba(139, 0, 0, 1));
+    transform: scale(1.03);
+  }
+}
+
+.evil .aria-cat-wrapper.speaking .aria-glow {
+  animation: speakingGlowEvil 0.8s ease-in-out infinite;
+}
+
+@keyframes speakingGlowEvil {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+/* Sound bars - Audio equalizer style */
+.sound-bars-container {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  width: 100vw;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 1;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.sound-bar {
+  width: 3px;
+  height: 100px;
+  background: #006666;
+  border-radius: 2px;
+  transform-origin: center;
+  animation: barBounce 0.6s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+/* Variation de hauteur pour chaque barre */
+.sound-bar:nth-child(5n+1) { --scale: 0.8; }
+.sound-bar:nth-child(5n+2) { --scale: 0.5; }
+.sound-bar:nth-child(5n+3) { --scale: 1; }
+.sound-bar:nth-child(5n+4) { --scale: 0.4; }
+.sound-bar:nth-child(5n+5) { --scale: 0.7; }
+
+/* Pics plus hauts au centre */
+.sound-bar:nth-child(n+40):nth-child(-n+60) { --scale: 1.2; }
+.sound-bar:nth-child(n+46):nth-child(-n+54) { --scale: 1.5; }
+.sound-bar:nth-child(50) { --scale: 1.8; }
+
+@keyframes barBounce {
+  0% {
+    transform: scaleY(0.1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scaleY(var(--scale, 0.6));
+    opacity: 1;
+  }
+}
+
+/* Evil mode */
+.evil .sound-bar {
+  background: #4a0000;
+}
+
+/* ============================================
+   MODE SWITCH
+   ============================================ */
+.mode-switch {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 10;
+}
+
+.mode-label {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #444;
+  transition: all 0.3s ease;
+}
+
+.mode-label.active {
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.evil .mode-label.active {
+  color: #ff3333;
+  text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+}
+
+.switch-btn {
+  width: 60px;
+  height: 30px;
+  background: rgba(0, 20, 20, 0.9);
+  border: 2px solid #00ffff;
+  border-radius: 15px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.switch-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.switch-btn.evil {
+  border-color: #ff3333;
+  box-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
+}
+
+.switch-btn.evil:hover {
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+}
+
+.switch-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #00ffff;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.switch-btn.evil .switch-slider {
+  left: 33px;
+  background: #ff3333;
+  box-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
+}
+
+/* ============================================
+   EVIL MODE STYLES
+   ============================================ */
+.aria-container.evil::before {
+  background-image:
+    linear-gradient(rgba(255, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.08) 1px, transparent 1px);
+}
+
+.aria-container.evil::after {
+  border-color: rgba(255, 0, 0, 0.4);
+  animation: orbit-rotate-evil 6s linear infinite;
+}
+
+@keyframes orbit-rotate-evil {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+.evil .aria-cat-svg {
+  color: #8b0000;
+  filter: drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  animation: evilGlitchSvg 1.5s ease-in-out infinite;
+}
+
+@keyframes evilGlitchSvg {
+  0%, 10%, 100% {
+    transform: translate(0, 0) skewX(0deg);
+    filter: drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+  2% {
+    transform: translate(-8px, 3px) skewX(-4deg);
+    filter: drop-shadow(8px 0 0 rgba(0, 255, 255, 0.8)) drop-shadow(-8px 0 0 rgba(255, 0, 255, 0.8)) drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+  4% {
+    transform: translate(8px, -3px) skewX(4deg);
+    filter: drop-shadow(-6px 0 0 rgba(0, 255, 255, 0.6)) drop-shadow(6px 0 0 rgba(255, 0, 255, 0.6)) drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+  6% {
+    transform: translate(-4px, 0) skewX(-2deg);
+    filter: drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+  8% {
+    transform: translate(4px, 2px) skewX(2deg);
+    filter: drop-shadow(-4px 0 0 rgba(0, 255, 255, 0.5)) drop-shadow(4px 0 0 rgba(255, 0, 255, 0.5)) drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+}
+
+.evil .aria-cat-wrapper {
+  animation: evilFloat 2.5s ease-in-out infinite;
+}
+
+@keyframes evilFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-5px) scale(1.02);
+  }
+}
+
+.evil .eye {
+  filter: drop-shadow(0 0 15px rgba(139, 0, 0, 0.8));
+}
+
+.evil .eye-pupil {
+  stroke: #8b0000 !important;
+  filter: drop-shadow(0 0 15px rgba(139, 0, 0, 1));
+}
+
+.evil .aria-glow {
+  background: radial-gradient(circle, rgba(139, 0, 0, 0.5) 0%, rgba(139, 0, 0, 0.1) 50%, transparent 70%);
+  animation: evilPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes evilPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.evil .aria-letter {
+  color: #ff0000;
+  text-shadow:
+    0 0 5px rgba(255, 0, 0, 1),
+    0 0 15px rgba(255, 0, 0, 1),
+    0 0 30px rgba(255, 0, 0, 0.8),
+    0 0 50px rgba(255, 0, 0, 0.5);
+  animation: evilGlitch 4s ease-in-out infinite;
+}
+
+@keyframes evilGlitch {
+  0%, 5%, 22%, 27%, 47%, 52%, 72%, 77%, 97%, 100% {
+    opacity: 1;
+    transform: translateY(0) skewX(0deg);
+    filter: none;
+    clip-path: inset(0 0 0 0);
+  }
+  1% {
+    opacity: 0.7;
+    transform: translateX(-12px) skewX(-6deg);
+    filter: blur(2px);
+    clip-path: inset(15% 0 50% 0);
+  }
+  2% {
+    opacity: 1;
+    transform: translateX(12px) skewX(6deg);
+    filter: none;
+    clip-path: inset(55% 0 15% 0);
+  }
+  3% {
+    opacity: 0.5;
+    transform: translateX(-6px) translateY(3px);
+    filter: blur(1px);
+    clip-path: inset(5% 0 75% 0);
+  }
+  23% {
+    opacity: 0.8;
+    transform: translateX(8px) skewX(4deg);
+    clip-path: inset(30% 0 40% 0);
+  }
+  24% {
+    opacity: 0.6;
+    transform: translateX(-8px) translateY(-2px);
+    filter: blur(1px);
+    clip-path: inset(60% 0 20% 0);
+  }
+  48% {
+    opacity: 0.4;
+    transform: translateX(-15px) skewX(-8deg);
+    filter: blur(3px);
+    clip-path: inset(10% 0 60% 0);
+  }
+  49% {
+    opacity: 1;
+    transform: translateX(15px) skewX(8deg);
+    filter: none;
+    clip-path: inset(70% 0 5% 0);
+  }
+  73% {
+    opacity: 0.7;
+    transform: translateX(-10px) skewX(-5deg);
+    filter: blur(2px);
+    clip-path: inset(25% 0 45% 0);
+  }
+  74% {
+    opacity: 0.9;
+    transform: translateX(8px) skewX(4deg);
+    filter: blur(1px);
+    clip-path: inset(40% 0 30% 0);
+  }
+}
+
+.evil .aria-message-box {
+  border-color: #ff0000;
+  border-width: 2px;
+  box-shadow:
+    0 0 25px rgba(255, 0, 0, 0.6),
+    0 0 50px rgba(255, 0, 0, 0.3),
+    inset 0 0 30px rgba(255, 0, 0, 0.15);
+}
+
+.evil .aria-message-box::before {
+  content: '! DANGER !';
+  color: #ff0000;
+  font-weight: bold;
+  animation: alertBlink 1s ease-in-out infinite;
+}
+
+@keyframes alertBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.evil .aria-message {
+  color: #ff0000;
+}
+
+.evil .aria-cursor {
+  color: #ff0000;
+  animation: blink 0.3s step-end infinite;
+}
+
+.evil .scanline {
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.4), transparent);
+  height: 4px;
+  animation: scanline 2s linear infinite;
+}
+
+/* Glitch overlay for evil mode */
+.evil .crt-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  animation: glitchOverlay 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glitchOverlay {
+  0%, 5%, 22%, 27%, 47%, 52%, 72%, 77%, 97%, 100% {
+    background: transparent;
+    transform: translateX(0);
+  }
+  1% {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 0, 0.2) 10%, transparent 12%, transparent 25%, rgba(0, 255, 255, 0.2) 27%, transparent 29%, transparent 50%, rgba(255, 0, 255, 0.2) 52%, transparent 54%);
+    transform: translateX(-15px);
+  }
+  2% {
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.2) 15%, transparent 17%, transparent 40%, rgba(255, 0, 0, 0.15) 42%, transparent 44%, transparent 65%, rgba(255, 0, 255, 0.2) 67%, transparent 69%);
+    transform: translateX(15px);
+  }
+  3% {
+    background: linear-gradient(90deg, rgba(255, 0, 255, 0.1) 5%, transparent 7%, transparent 30%, rgba(0, 255, 255, 0.15) 32%, transparent 34%);
+    transform: translateX(-5px);
+  }
+  23% {
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.25) 20%, transparent 22%, transparent 55%, rgba(255, 0, 0, 0.2) 57%, transparent 59%);
+    transform: translateX(12px);
+  }
+  24% {
+    background: linear-gradient(90deg, rgba(255, 0, 255, 0.2) 8%, transparent 10%, transparent 35%, rgba(0, 255, 255, 0.15) 37%, transparent 39%, transparent 75%, rgba(255, 0, 0, 0.2) 77%, transparent 79%);
+    transform: translateX(-12px);
+  }
+  48% {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 0, 0.3) 5%, transparent 7%, transparent 20%, rgba(0, 255, 255, 0.25) 22%, transparent 24%, transparent 45%, rgba(255, 0, 255, 0.25) 47%, transparent 49%);
+    transform: translateX(-20px);
+  }
+  49% {
+    background: linear-gradient(90deg, rgba(0, 255, 255, 0.2) 10%, transparent 12%, transparent 30%, rgba(255, 0, 255, 0.25) 32%, transparent 34%, transparent 60%, rgba(255, 0, 0, 0.3) 62%, transparent 64%);
+    transform: translateX(20px);
+  }
+  73% {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 255, 0.2) 15%, transparent 17%, transparent 40%, rgba(255, 0, 0, 0.2) 42%, transparent 44%, transparent 70%, rgba(0, 255, 255, 0.2) 72%, transparent 74%);
+    transform: translateX(-15px);
+  }
+  74% {
+    background: linear-gradient(90deg, rgba(0, 255, 255, 0.15) 5%, transparent 7%, transparent 35%, rgba(255, 0, 255, 0.2) 37%, transparent 39%, transparent 65%, rgba(255, 0, 0, 0.15) 67%, transparent 69%);
+    transform: translateX(12px);
+  }
+}
+
+/* Glitch lines effect */
+.evil::before {
+  animation: glitchGrid 4s ease-in-out infinite !important;
+}
+
+@keyframes glitchGrid {
+  0%, 5%, 22%, 27%, 47%, 52%, 72%, 77%, 97%, 100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  1% { transform: translateX(-5px) skewX(-2deg); opacity: 0.7; }
+  2% { transform: translateX(5px) skewX(2deg); opacity: 0.5; }
+  3% { transform: translateX(-2px); opacity: 0.8; }
+  23% { transform: translateX(4px) skewX(1deg); opacity: 0.6; }
+  24% { transform: translateX(-4px) skewX(-1deg); opacity: 0.7; }
+  48% { transform: translateX(-8px) skewX(-3deg); opacity: 0.4; }
+  49% { transform: translateX(8px) skewX(3deg); opacity: 0.5; }
+  73% { transform: translateX(-6px) skewX(-2deg); opacity: 0.6; }
+  74% { transform: translateX(5px) skewX(2deg); opacity: 0.7; }
+}
+
+.evil .whisker {
+  animation: evilWhisker 2s ease-in-out infinite;
+}
+
+@keyframes evilWhisker {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-3deg) translateY(-1px); }
+  75% { transform: rotate(3deg) translateY(1px); }
+}
+
+/* ============================================
+   GOOD MODE (default) TRANSITION
+   ============================================ */
+.aria-container.good .aria-cat-svg,
+.aria-container.good .aria-letter,
+.aria-container.good .aria-message-box,
+.aria-container.good .aria-glow {
+  transition: all 0.5s ease;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .aria-cat-svg {
+    width: 200px;
+    height: 180px;
+  }
+
+  .aria-title {
+    font-size: 1.8rem;
+    letter-spacing: 0.5em;
+  }
+
+  .aria-message-box {
+    max-width: 90%;
+    padding: 0.75rem 1rem;
+  }
+
+  .mode-switch {
+    top: 1rem;
+    right: 1rem;
+    gap: 0.5rem;
+  }
+
+  .mode-label {
+    font-size: 0.6rem;
+  }
+
+  .switch-btn {
+    width: 50px;
+    height: 26px;
+  }
+
+  .switch-slider {
+    width: 18px;
+    height: 18px;
+  }
+
+  .switch-btn.evil .switch-slider {
+    left: 28px;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(start npm run dev)",
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm cache clean:*)"
+    ]
+  }
+}
