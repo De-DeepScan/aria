@@ -154,6 +154,72 @@
   animation: float 1.5s ease-in-out infinite;
 }
 
+/* Chat figé (bugé) pendant les dilemmes */
+.aria-cat-wrapper.dilemma-active {
+  animation: none;
+  transform: translate(-50%, -50%);
+}
+
+.aria-cat-wrapper.dilemma-active .aria-cat-svg {
+  animation: none;
+}
+
+.aria-cat-wrapper.dilemma-active .whisker {
+  animation: none;
+}
+
+.aria-cat-wrapper.dilemma-active .aria-glow {
+  animation: none;
+  opacity: 0.5;
+}
+
+/* Symbole d'alerte (triangle avec !) - clignotement simple */
+.alert-symbol {
+  animation: alertBlink 0.8s ease-in-out infinite;
+}
+
+@keyframes alertBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Animation de reboot quand le chat revient à la normale */
+.aria-cat-wrapper.rebooting {
+  animation: rebootSequence 1.5s ease-out forwards;
+}
+
+@keyframes rebootSequence {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+    filter: brightness(2) saturate(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+    filter: brightness(1.5) saturate(0.5);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(0.95);
+    filter: brightness(1.2) saturate(0.8);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: brightness(1) saturate(1);
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(0.98);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: none;
+  }
+}
+
 .aria-cat-svg {
   width: 400px;
   height: 360px;
@@ -446,6 +512,74 @@
 @keyframes btnPulse {
   0%, 100% { transform: translateX(-50%) scale(1); }
   50% { transform: translateX(-50%) scale(1.05); }
+}
+
+/* ============================================
+   DILEMMA BUTTON
+   ============================================ */
+.dilemma-btn {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 2px solid #ff0000;
+  background: rgba(20, 0, 0, 0.9);
+  color: #ff0000;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: dilemmaAppear 0.5s ease-out;
+}
+
+@keyframes dilemmaAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.dilemma-btn:hover:not(:disabled) {
+  background: rgba(139, 0, 0, 0.3);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.5);
+  transform: scale(1.05);
+}
+
+.dilemma-btn.active {
+  background: rgba(139, 0, 0, 0.4);
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+}
+
+.dilemma-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dilemma-icon {
+  font-size: 1rem;
+  animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 /* ============================================
@@ -970,5 +1104,1355 @@
 
   .switch-btn.evil .switch-slider {
     left: 28px;
+  }
+}
+
+/* ============================================
+   EVIL CHAT INTERFACE
+   ============================================ */
+.evil-chat-container {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  width: 420px;
+  max-height: 60vh;
+  background: rgba(10, 0, 0, 0.95);
+  border: 2px solid #ff0000;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  box-shadow:
+    0 0 30px rgba(255, 0, 0, 0.4),
+    0 0 60px rgba(255, 0, 0, 0.2),
+    inset 0 0 30px rgba(255, 0, 0, 0.1);
+  animation: chatAppear 0.5s ease-out;
+}
+
+@keyframes chatAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.evil-chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(139, 0, 0, 0.3);
+  border-bottom: 1px solid #ff0000;
+}
+
+.evil-chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chat-close-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  color: #ff0000;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.chat-close-btn:hover {
+  background: rgba(255, 0, 0, 0.2);
+  border-color: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.evil-chat-title {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: #ff0000;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: titleGlitch 3s ease-in-out infinite;
+}
+
+@keyframes titleGlitch {
+  0%, 92%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  }
+  93% {
+    opacity: 0.8;
+    text-shadow: -2px 0 #0ff, 2px 0 #f0f;
+  }
+  94% {
+    opacity: 1;
+    text-shadow: 2px 0 #0ff, -2px 0 #f0f;
+  }
+  95% {
+    opacity: 0.9;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  }
+}
+
+.evil-chat-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.7rem;
+  color: #ff3333;
+  letter-spacing: 1px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #ff0000;
+  border-radius: 50%;
+  animation: statusPulse 1s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 5px #ff0000;
+  }
+  50% {
+    opacity: 0.5;
+    box-shadow: 0 0 15px #ff0000;
+  }
+}
+
+.evil-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 300px;
+}
+
+.evil-chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.evil-chat-messages::-webkit-scrollbar-track {
+  background: rgba(139, 0, 0, 0.2);
+}
+
+.evil-chat-messages::-webkit-scrollbar-thumb {
+  background: #ff0000;
+  border-radius: 3px;
+}
+
+.chat-message {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 0.75rem 1rem;
+  border-radius: 0;
+  animation: messageAppear 0.3s ease-out;
+}
+
+@keyframes messageAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.aria-message-bubble {
+  background: rgba(139, 0, 0, 0.2);
+  border-left: 3px solid #ff0000;
+  color: #ff3333;
+  align-self: flex-start;
+  max-width: 90%;
+}
+
+.user-message-bubble {
+  background: rgba(0, 100, 100, 0.2);
+  border-left: 3px solid #00ffff;
+  color: #00ffff;
+  align-self: flex-end;
+  max-width: 90%;
+  animation: userMessageAppear 0.3s ease-out;
+}
+
+@keyframes userMessageAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.message-prefix {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-bottom: 0.25rem;
+  letter-spacing: 1px;
+}
+
+.message-text {
+  display: block;
+}
+
+/* Typing indicator */
+.chat-message.typing {
+  background: rgba(139, 0, 0, 0.15);
+}
+
+.typing-indicator {
+  display: inline-flex;
+  gap: 4px;
+  padding: 0.25rem 0;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background: #ff0000;
+  border-radius: 50%;
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+/* Choices */
+.evil-chat-choices {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255, 0, 0, 0.3);
+  background: rgba(20, 0, 0, 0.5);
+  animation: choicesAppear 0.4s ease-out;
+}
+
+@keyframes choicesAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   DILEMMA GLITCH MODE - FULL SCREEN BUG EFFECT
+   ============================================ */
+
+/* Global glitch when dilemma appears */
+.aria-container.glitch-mode {
+  animation: screenGlitch 0.8s ease-out;
+}
+
+@keyframes screenGlitch {
+  0% {
+    filter: none;
+  }
+  5% {
+    filter: hue-rotate(90deg) saturate(2);
+    transform: translate(-2px, 1px);
+  }
+  10% {
+    filter: hue-rotate(-90deg) saturate(3) brightness(1.2);
+    transform: translate(3px, -2px) skewX(1deg);
+  }
+  15% {
+    filter: invert(1) hue-rotate(180deg);
+    transform: translate(-1px, 2px) skewX(-2deg);
+  }
+  20% {
+    filter: hue-rotate(45deg) saturate(2) contrast(1.5);
+    transform: translate(2px, -1px);
+  }
+  25% {
+    filter: none;
+    transform: translate(-3px, 1px) skewX(1deg);
+  }
+  30% {
+    filter: saturate(0) brightness(2);
+    transform: translate(1px, -2px);
+  }
+  35% {
+    filter: hue-rotate(-45deg) saturate(1.5);
+    transform: translate(-2px, 0);
+  }
+  40% {
+    filter: none;
+    transform: none;
+  }
+  100% {
+    filter: none;
+    transform: none;
+  }
+}
+
+/* Glitch overlay that covers the whole screen */
+.aria-container.glitch-mode::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 0, 0, 0.1) 2px,
+      rgba(255, 0, 0, 0.1) 4px
+    );
+  animation: glitchOverlayScroll 0.1s linear infinite;
+  pointer-events: none;
+  z-index: 1000;
+  mix-blend-mode: overlay;
+}
+
+@keyframes glitchOverlayScroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(4px);
+  }
+}
+
+/* ============================================
+   ARIA FREEZE EFFECT - When dilemma appears
+   ============================================ */
+
+/* ARIA wrapper freezes */
+.aria-cat-wrapper.aria-freeze {
+  animation: ariaFreezeWrapper 1.5s ease-out !important;
+}
+
+@keyframes ariaFreezeWrapper {
+  0% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  /* Glitch burst */
+  5% {
+    transform: translate(-50%, -50%) translate(-8px, 4px) skewX(-3deg);
+  }
+  8% {
+    transform: translate(-50%, -50%) translate(8px, -4px) skewX(3deg);
+  }
+  /* FREEZE - stop all movement */
+  12%, 75% {
+    transform: translate(-50%, -50%) translateY(-5px);
+    animation-timing-function: step-end;
+  }
+  /* Glitch trying to recover */
+  78% {
+    transform: translate(-50%, -50%) translate(-3px, -5px);
+  }
+  82% {
+    transform: translate(-50%, -50%) translate(2px, -4px);
+  }
+  85% {
+    transform: translate(-50%, -50%) translate(-1px, -5px);
+  }
+  /* Back to normal floating */
+  100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+}
+
+/* ARIA SVG freezes with visual effects */
+.aria-freeze .aria-cat-svg {
+  animation: ariaFreezeSvg 1.5s ease-out !important;
+}
+
+@keyframes ariaFreezeSvg {
+  0% {
+    filter: drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+  /* Initial glitch */
+  3% {
+    filter: drop-shadow(-8px 0 0 #0ff) drop-shadow(8px 0 0 #f0f) brightness(2);
+    transform: skewX(-5deg);
+  }
+  6% {
+    filter: drop-shadow(8px 0 0 #0ff) drop-shadow(-8px 0 0 #f0f) brightness(0.5);
+    transform: skewX(5deg);
+  }
+  9% {
+    filter: drop-shadow(-4px 0 0 #0ff) drop-shadow(4px 0 0 #f0f);
+    transform: skewX(-2deg);
+  }
+  /* FREEZE - grayscale, static */
+  12%, 75% {
+    filter: grayscale(1) brightness(0.6) drop-shadow(0 0 20px rgba(100, 100, 100, 0.8));
+    transform: none;
+  }
+  /* Trying to recover - flickering */
+  76% {
+    filter: grayscale(0.8) brightness(1.5) drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+  78% {
+    filter: grayscale(1) brightness(0.4);
+  }
+  80% {
+    filter: grayscale(0.5) brightness(1.2) drop-shadow(-3px 0 0 #0ff) drop-shadow(3px 0 0 #f0f);
+    transform: skewX(2deg);
+  }
+  83% {
+    filter: grayscale(0.8) brightness(0.7);
+    transform: skewX(-1deg);
+  }
+  86% {
+    filter: grayscale(0.3) brightness(1.1);
+    transform: none;
+  }
+  90% {
+    filter: grayscale(0) brightness(1) drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+  }
+  100% {
+    filter: drop-shadow(0 0 30px rgba(139, 0, 0, 1));
+    transform: none;
+  }
+}
+
+/* Pupil freezes in place */
+.aria-freeze .eye-pupil {
+  transition: none !important;
+  animation: pupilFreeze 1.5s ease-out !important;
+}
+
+@keyframes pupilFreeze {
+  0%, 12% {
+    opacity: 1;
+  }
+  /* Pupil flickers during freeze */
+  15%, 25% {
+    opacity: 0.3;
+  }
+  30%, 40% {
+    opacity: 0.8;
+  }
+  45%, 55% {
+    opacity: 0.2;
+  }
+  60%, 70% {
+    opacity: 0.6;
+  }
+  75% {
+    opacity: 0.4;
+  }
+  85%, 100% {
+    opacity: 1;
+  }
+}
+
+/* Whiskers stop moving */
+.aria-freeze .whisker {
+  animation: whiskerFreeze 1.5s ease-out !important;
+}
+
+@keyframes whiskerFreeze {
+  0%, 10% {
+    transform: rotate(0deg);
+  }
+  /* Frozen in place */
+  12%, 75% {
+    transform: rotate(-2deg);
+    opacity: 0.5;
+  }
+  /* Recovery twitch */
+  78% {
+    transform: rotate(3deg);
+    opacity: 0.7;
+  }
+  82% {
+    transform: rotate(-1deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Glow freezes and dims */
+.aria-freeze .aria-glow {
+  animation: glowFreeze 1.5s ease-out !important;
+}
+
+@keyframes glowFreeze {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+    background: radial-gradient(circle, rgba(139, 0, 0, 0.5) 0%, rgba(139, 0, 0, 0.1) 50%, transparent 70%);
+  }
+  /* Frozen glow - gray and dim */
+  12%, 75% {
+    opacity: 0.3;
+    transform: scale(0.9);
+    background: radial-gradient(circle, rgba(100, 100, 100, 0.3) 0%, rgba(50, 50, 50, 0.1) 50%, transparent 70%);
+  }
+  /* Recovery */
+  85% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+    background: radial-gradient(circle, rgba(139, 0, 0, 0.5) 0%, rgba(139, 0, 0, 0.1) 50%, transparent 70%);
+  }
+}
+
+/* Static noise overlay on ARIA during freeze */
+.aria-freeze::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  right: -50px;
+  bottom: -50px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0;
+  animation: ariaNoiseOverlay 1.5s ease-out;
+  pointer-events: none;
+  z-index: 10;
+  mix-blend-mode: overlay;
+}
+
+@keyframes ariaNoiseOverlay {
+  0%, 10% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.4;
+  }
+  15%, 70% {
+    opacity: 0.25;
+  }
+  75% {
+    opacity: 0.3;
+  }
+  85% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Error text appears on ARIA during freeze */
+.aria-freeze::after {
+  content: 'ERROR: MORAL_CONFLICT_DETECTED';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.7rem;
+  color: #ff0000;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+  white-space: nowrap;
+  opacity: 0;
+  animation: ariaErrorText 1.5s ease-out;
+  z-index: 20;
+}
+
+@keyframes ariaErrorText {
+  0%, 10% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  20%, 65% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  68% {
+    opacity: 0.5;
+    transform: translate(-52%, -50%);
+  }
+  71% {
+    opacity: 1;
+    transform: translate(-48%, -50%);
+  }
+  74% {
+    opacity: 0.7;
+    transform: translate(-50%, -48%);
+  }
+  78% {
+    opacity: 0.3;
+    transform: translate(-50%, -52%);
+  }
+  85% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ============================================
+   CHAT FREEZE EFFECT - When dilemma appears
+   ============================================ */
+.evil-chat-container.chat-freeze {
+  animation: chatFreeze 1.2s ease-out;
+}
+
+@keyframes chatFreeze {
+  0% {
+    filter: none;
+    transform: none;
+  }
+  /* Initial glitch burst */
+  5% {
+    filter: brightness(2) saturate(0);
+    transform: translate(-3px, 2px) skewX(-1deg);
+  }
+  10% {
+    filter: brightness(0.5) contrast(2) hue-rotate(180deg);
+    transform: translate(3px, -1px) skewX(1deg);
+  }
+  /* FREEZE - everything stops */
+  15%, 70% {
+    filter: saturate(0) brightness(0.8) contrast(1.2);
+    transform: none;
+    opacity: 0.9;
+  }
+  /* Glitch trying to unfreeze */
+  72% {
+    filter: saturate(0) brightness(1.5);
+    transform: translate(-2px, 0);
+  }
+  75% {
+    filter: saturate(0.5) brightness(0.7);
+    transform: translate(2px, 1px);
+  }
+  78% {
+    filter: saturate(0) brightness(1.2);
+    transform: translate(-1px, -1px);
+  }
+  /* Back to normal */
+  85% {
+    filter: saturate(0.8);
+    transform: none;
+  }
+  100% {
+    filter: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Freeze overlay - static noise during freeze */
+.evil-chat-container.chat-freeze::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.03) 1px,
+      rgba(255, 255, 255, 0.03) 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 0, 0, 0.02) 1px,
+      rgba(255, 0, 0, 0.02) 2px
+    );
+  animation: freezeOverlay 1.2s ease-out;
+  pointer-events: none;
+  z-index: 100;
+}
+
+@keyframes freezeOverlay {
+  0%, 10% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    background-color: rgba(100, 100, 100, 0.3);
+  }
+  70% {
+    opacity: 1;
+    background-color: rgba(50, 50, 50, 0.2);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Freeze text indicator */
+.evil-chat-container.chat-freeze::before {
+  content: '⚠ SYSTEM FREEZE ⚠';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem;
+  color: #ff0000;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+  z-index: 101;
+  animation: freezeText 1.2s ease-out;
+  white-space: nowrap;
+}
+
+@keyframes freezeText {
+  0%, 10% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25%, 65% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  70% {
+    opacity: 0.8;
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-52%, -50%);
+  }
+  80% {
+    transform: translate(-48%, -50%);
+  }
+  85% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+/* Messages freeze in place with static effect */
+.chat-freeze .evil-chat-messages {
+  animation: messagesFreeze 1.2s ease-out;
+}
+
+@keyframes messagesFreeze {
+  0%, 10% {
+    filter: none;
+  }
+  15%, 70% {
+    filter: grayscale(1) brightness(0.7);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+/* Typing indicator freezes */
+.chat-freeze .typing-indicator span {
+  animation-play-state: paused !important;
+}
+
+/* Random noise/static effect */
+.glitch-mode .evil-chat-messages::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.15;
+  animation: noiseMove 0.1s steps(5) infinite;
+  pointer-events: none;
+  z-index: 5;
+  mix-blend-mode: overlay;
+}
+
+@keyframes noiseMove {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(2px, -2px); }
+  60% { transform: translate(-1px, -1px); }
+  80% { transform: translate(1px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Text scramble effect for dilemma messages */
+.chat-message.dilemma-message {
+  animation: dilemmaMessageGlitch 0.6s ease-out;
+  border-left: 3px solid #ff3333;
+  background: rgba(255, 0, 0, 0.15);
+  position: relative;
+}
+
+@keyframes dilemmaMessageGlitch {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) skewX(-10deg);
+    filter: blur(10px);
+    clip-path: inset(0 100% 0 0);
+  }
+  20% {
+    opacity: 0.5;
+    transform: translateX(10px) skewX(5deg);
+    filter: blur(5px);
+    clip-path: inset(0 50% 0 0);
+  }
+  40% {
+    opacity: 0.8;
+    transform: translateX(-5px) skewX(-2deg);
+    filter: blur(2px);
+    clip-path: inset(0 20% 0 0);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(2px) skewX(1deg);
+    filter: blur(0);
+    clip-path: none;
+  }
+  80% {
+    transform: translateX(-1px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.chat-message.dilemma-message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(255, 0, 0, 0.2), transparent);
+  animation: dilemmaGlow 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes dilemmaGlow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Glitch text effect */
+.chat-message.dilemma-message .message-text {
+  animation: textGlitchEffect 0.6s ease-out;
+  position: relative;
+}
+
+@keyframes textGlitchEffect {
+  0% {
+    text-shadow: -3px 0 #0ff, 3px 0 #f0f, 0 0 10px rgba(255, 0, 0, 0.8);
+    opacity: 0;
+    letter-spacing: 5px;
+  }
+  20% {
+    text-shadow: 3px 0 #0ff, -3px 0 #f0f, 0 0 20px rgba(255, 0, 0, 1);
+    opacity: 0.7;
+    letter-spacing: 3px;
+  }
+  40% {
+    text-shadow: -2px 0 #0ff, 2px 0 #f0f;
+    opacity: 0.9;
+    letter-spacing: 1px;
+  }
+  60% {
+    text-shadow: 1px 0 #0ff, -1px 0 #f0f;
+    opacity: 1;
+    letter-spacing: 0;
+  }
+  100% {
+    text-shadow: none;
+    opacity: 1;
+    letter-spacing: normal;
+  }
+}
+
+/* Flash effect on screen */
+.glitch-mode .crt-flicker {
+  animation: hardFlicker 0.8s ease-out !important;
+}
+
+@keyframes hardFlicker {
+  0% { opacity: 0; background: rgba(255, 255, 255, 0.5); }
+  5% { opacity: 1; background: rgba(255, 0, 0, 0.4); }
+  10% { opacity: 0; background: rgba(0, 255, 255, 0.3); }
+  15% { opacity: 0.8; background: rgba(255, 0, 255, 0.3); }
+  20% { opacity: 0.2; background: rgba(255, 0, 0, 0.2); }
+  25% { opacity: 0.6; background: rgba(255, 255, 255, 0.3); }
+  30% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.evil-choice-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(139, 0, 0, 0.15);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  color: #ff3333;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.evil-choice-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.2), transparent);
+  transition: left 0.4s ease;
+}
+
+.evil-choice-btn:hover {
+  background: rgba(139, 0, 0, 0.3);
+  border-color: #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+  transform: translateX(5px);
+}
+
+.evil-choice-btn:hover::before {
+  left: 100%;
+}
+
+.evil-choice-btn:active {
+  transform: translateX(5px) scale(0.98);
+}
+
+.choice-number {
+  color: #ff0000;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   NEW DILEMMA INTERFACE - FULL SCREEN
+   ============================================ */
+
+.dilemma-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem;
+  pointer-events: none;
+}
+
+
+/* Question section */
+.dilemma-question {
+  text-align: center;
+  padding: 1.5rem 2rem;
+  margin-top: 1rem;
+  background: rgba(10, 0, 0, 0.9);
+  border: 2px solid #ff0000;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+  pointer-events: auto;
+  animation: questionAppear 0.5s ease-out;
+}
+
+@keyframes questionAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dilemma-number {
+  display: block;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  color: #ff0000;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.dilemma-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.5rem;
+  color: #ff3333;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  animation: textGlitch 4s ease-in-out infinite;
+}
+
+@keyframes textGlitch {
+  0%, 95%, 100% {
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  }
+  96% {
+    text-shadow: -3px 0 #0ff, 3px 0 #f0f, 0 0 20px rgba(255, 0, 0, 0.5);
+  }
+  97% {
+    text-shadow: 3px 0 #0ff, -3px 0 #f0f, 0 0 20px rgba(255, 0, 0, 0.5);
+  }
+  98% {
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+  }
+}
+
+/* Choices container */
+.dilemma-choices {
+  display: flex;
+  justify-content: space-between;
+  gap: 4rem;
+  padding: 0 2rem 2rem;
+  margin-bottom: 2rem;
+  pointer-events: auto;
+}
+
+/* Individual choice button */
+.dilemma-choice {
+  flex: 0 0 280px;
+  background: rgba(10, 0, 0, 0.95);
+  border: 2px solid #ff0000;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+}
+
+.dilemma-choice::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 0, 0, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.dilemma-choice:hover::before {
+  left: 100%;
+}
+
+.dilemma-choice:hover {
+  background: rgba(139, 0, 0, 0.4);
+  border-color: #ff3333;
+  box-shadow:
+    0 0 30px rgba(255, 0, 0, 0.5),
+    inset 0 0 30px rgba(255, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+.dilemma-choice:active {
+  transform: scale(0.98);
+}
+
+.dilemma-choice-left {
+  animation: slideFromLeft 0.6s ease-out;
+}
+
+.dilemma-choice-right {
+  animation: slideFromRight 0.6s ease-out;
+}
+
+@keyframes slideFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Choice label (A / B) */
+.choice-label {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ff0000;
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+}
+
+/* Choice text */
+.choice-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem;
+  color: #ff3333;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ============================================
+   CHOICE SELECTION ANIMATIONS
+   ============================================ */
+
+/* Selected choice - glows and pulses */
+.dilemma-choice.selected {
+  animation: choiceSelected 1s ease-out forwards;
+  border-color: #00ff00;
+  box-shadow:
+    0 0 30px rgba(0, 255, 0, 0.6),
+    0 0 60px rgba(0, 255, 0, 0.4),
+    inset 0 0 30px rgba(0, 255, 0, 0.2);
+}
+
+@keyframes choiceSelected {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  20% {
+    transform: scale(1.1);
+    filter: brightness(1.5);
+  }
+  40% {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+  60% {
+    transform: scale(1.08);
+    filter: brightness(1.4);
+  }
+  80% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+    filter: brightness(2);
+  }
+}
+
+.dilemma-choice.selected .choice-label {
+  color: #00ff00;
+  text-shadow: 0 0 20px rgba(0, 255, 0, 1);
+  animation: labelFlash 0.2s ease-in-out 3;
+}
+
+@keyframes labelFlash {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.dilemma-choice.selected .choice-text {
+  color: #00ff00;
+}
+
+/* Not selected choice - fades out */
+.dilemma-choice.not-selected {
+  animation: choiceNotSelected 0.8s ease-out forwards;
+}
+
+@keyframes choiceNotSelected {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.95);
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0;
+    filter: grayscale(1) brightness(0.5);
+  }
+}
+
+/* Question fades out when choice is made */
+.choice-made + .dilemma-question,
+.dilemma-overlay:has(.choice-made) .dilemma-question {
+  animation: questionFadeOut 0.8s ease-out forwards;
+}
+
+@keyframes questionFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Disabled state */
+.dilemma-choice:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dilemma-overlay {
+    padding: 1rem;
+  }
+
+  .dilemma-question {
+    padding: 1rem;
+    margin-top: 3rem;
+  }
+
+  .dilemma-text {
+    font-size: 1.1rem;
+  }
+
+  .dilemma-choices {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .dilemma-choice {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 300px;
+    padding: 1rem;
+  }
+
+  .choice-label {
+    font-size: 1.5rem;
+  }
+
+  .choice-text {
+    font-size: 0.85rem;
+  }
+}
+
+/* Old chat responsive - kept for reference */
+@media (max-width: 600px) {
+  .evil-chat-container {
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    bottom: 5rem;
+    max-height: 50vh;
+  }
+
+  .evil-chat-messages {
+    max-height: 200px;
+  }
+
+  .chat-message {
+    font-size: 0.75rem;
+  }
+
+  .evil-choice-btn {
+    font-size: 0.75rem;
+    padding: 0.6rem 0.8rem;
   }
 }
