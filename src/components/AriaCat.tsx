@@ -1,8 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import "./AriaCat.css";
+import dilemmasData from "../data/dilemmas.json";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const faceapi: any;
+
+interface Choice {
+  id: string;
+  description: string;
+}
+
+interface Dilemma {
+  id: string;
+  description: string;
+  choices: Choice[];
+}
 
 interface AriaCatProps {
   isThinking?: boolean;
@@ -40,6 +52,17 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
   const [faceDetected, setFaceDetected] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("Chargement...");
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Dilemma states
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [currentDilemmaIndex, setCurrentDilemmaIndex] = useState(0);
+  const [showChoices, setShowChoices] = useState(false);
+  const [userChoices, setUserChoices] = useState<Array<{dilemmaId: string, choiceId: string}>>([]);
+  const [dilemmaShock, setDilemmaShock] = useState(false);
+  const [isRebooting, setIsRebooting] = useState(false);
+  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
+
+  const dilemmas: Dilemma[] = dilemmasData;
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -187,15 +210,20 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
     };
   }, [modelsLoaded]);
 
-  // Animation de clignement
+  // Animation de clignement (désactivée pendant les dilemmes)
   useEffect(() => {
+    if (isChatOpen) {
+      setIsBlinking(false);
+      return;
+    }
+
     const blinkInterval = setInterval(() => {
       setIsBlinking(true);
       setTimeout(() => setIsBlinking(false), 150);
     }, 3000);
 
     return () => clearInterval(blinkInterval);
-  }, []);
+  }, [isChatOpen]);
 
   // Animation du texte (effet machine à écrire)
   useEffect(() => {
@@ -219,8 +247,58 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
     return () => clearInterval(interval);
   }, [message]);
 
+  // Reset dilemma when switching modes
+  useEffect(() => {
+    if (!isEvil) {
+      setIsChatOpen(false);
+      setCurrentDilemmaIndex(0);
+      setShowChoices(false);
+      setUserChoices([]);
+    }
+  }, [isEvil]);
+
+  // Start dilemma when button is clicked
+  const handleStartDilemmas = () => {
+    if (!isEvil) return;
+    if (currentDilemmaIndex >= dilemmas.length) return; // Plus de dilemmes
+
+    setIsChatOpen(true);
+    setShowChoices(true);
+
+    // Trigger glitch effect
+    setDilemmaShock(true);
+    setTimeout(() => setDilemmaShock(false), 800);
+  };
+
+  const handleChoiceSelect = (choice: Choice) => {
+    const currentDilemma = dilemmas[currentDilemmaIndex];
+
+    // Save user choice
+    setUserChoices(prev => [...prev, { dilemmaId: currentDilemma.id, choiceId: choice.id }]);
+
+    // Mark selected choice for animation
+    setSelectedChoice(choice.id);
+
+    // Wait for animation, then close
+    setTimeout(() => {
+      setSelectedChoice(null);
+      setShowChoices(false);
+      setIsChatOpen(false);
+
+      // Reboot animation
+      setIsRebooting(true);
+      setTimeout(() => setIsRebooting(false), 1500);
+
+      // Move to next dilemma index for next time
+      const nextIndex = currentDilemmaIndex + 1;
+      if (nextIndex < dilemmas.length) {
+        setCurrentDilemmaIndex(nextIndex);
+      }
+    }, 1000);
+  };
+
   return (
-    <div className={`aria-container ${isEvil ? "evil" : "good"}`}>
+    <div className={`aria-container ${isEvil ? "evil" : "good"} ${dilemmaShock ? "glitch-mode" : ""}`}>
       {/* Vidéo cachée pour la détection */}
       <video
         ref={videoRef}
@@ -242,6 +320,18 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
         SPEAK
       </button>
 
+      {/* Bouton dilemmes (mode Evil uniquement) */}
+      {isEvil && (
+        <button
+          className={`dilemma-btn ${isChatOpen ? "active" : ""}`}
+          onClick={handleStartDilemmas}
+          disabled={isChatOpen}
+        >
+          <span className="dilemma-icon">⚠</span>
+          DILEMMES
+        </button>
+      )}
+
       {/* Switch mode */}
       <div className="mode-switch">
         <span className={`mode-label ${!isEvil ? "active" : ""}`}>GOOD</span>
@@ -254,7 +344,7 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
         <span className={`mode-label ${isEvil ? "active" : ""}`}>EVIL</span>
       </div>
 
-      <div className={`aria-cat-wrapper ${isThinking ? "thinking" : ""} ${isSpeaking ? "speaking" : ""}`}>
+      <div className={`aria-cat-wrapper ${isThinking ? "thinking" : ""} ${isSpeaking ? "speaking" : ""} ${dilemmaShock ? "aria-freeze" : ""} ${isChatOpen ? "dilemma-active" : ""} ${isRebooting ? "rebooting" : ""}`}>
         <svg
           viewBox="0 0 200 180"
           className="aria-cat-svg"
@@ -293,61 +383,98 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
             />
           )}
 
-          {/* Oeil */}
-          <g className={`eye ${isBlinking ? "blink" : ""}`}>
-            {!isEvil ? (
+          {/* Oeil normal ou symbole d'alerte pendant les dilemmes */}
+          {isChatOpen ? (
+            /* Symbole d'alerte (triangle avec !) */
+            <g className="alert-symbol">
+              {/* Triangle */}
               <path
-                d="M 55 115
-                   Q 65 100, 100 85
-                   Q 135 100, 145 115
-                   Q 135 130, 100 145
-                   Q 65 130, 55 115 Z"
+                d="M 100 85 L 130 135 L 70 135 Z"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="alert-triangle"
               />
-            ) : (
-              <path
-                d="M 50 115
-                   Q 65 105, 100 100
-                   Q 135 105, 150 115
-                   Q 135 125, 100 130
-                   Q 65 125, 50 115 Z"
-                fill="none"
+              {/* Point d'exclamation - barre */}
+              <line
+                x1="100"
+                y1="100"
+                x2="100"
+                y2="118"
                 stroke="currentColor"
-                strokeWidth="3"
+                strokeWidth="4"
                 strokeLinecap="round"
-                strokeLinejoin="round"
+                className="alert-exclamation"
               />
-            )}
-            {/* Pupille */}
-            <line
-              x1={100 + pupilOffset.x}
-              y1={(isEvil ? 103 : 95) + pupilOffset.y}
-              x2={100 + pupilOffset.x}
-              y2={(isEvil ? 127 : 135) + pupilOffset.y}
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              className="eye-pupil"
-              style={{ transition: "all 0.2s ease-out" }}
-            />
-          </g>
+              {/* Point d'exclamation - point */}
+              <circle
+                cx="100"
+                cy="128"
+                r="3"
+                fill="currentColor"
+                className="alert-dot"
+              />
+            </g>
+          ) : (
+            <>
+              <g className={`eye ${isBlinking ? "blink" : ""}`}>
+                {!isEvil ? (
+                  <path
+                    d="M 55 115
+                       Q 65 100, 100 85
+                       Q 135 100, 145 115
+                       Q 135 130, 100 145
+                       Q 65 130, 55 115 Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                ) : (
+                  <path
+                    d="M 50 115
+                       Q 65 105, 100 100
+                       Q 135 105, 150 115
+                       Q 135 125, 100 130
+                       Q 65 125, 50 115 Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
+                {/* Pupille */}
+                <line
+                  x1={100 + pupilOffset.x}
+                  y1={(isEvil ? 103 : 95) + pupilOffset.y}
+                  x2={100 + pupilOffset.x}
+                  y2={(isEvil ? 127 : 135) + pupilOffset.y}
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  className="eye-pupil"
+                  style={{ transition: "all 0.2s ease-out" }}
+                />
+              </g>
 
-          {/* Oeil fermé (pour clignement) */}
-          <g className={`eye-closed ${isBlinking ? "show" : ""}`}>
-            <line
-              x1={isEvil ? "50" : "55"}
-              y1="115"
-              x2={isEvil ? "150" : "145"}
-              y2="115"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-          </g>
+              {/* Oeil fermé (pour clignement) */}
+              <g className={`eye-closed ${isBlinking ? "show" : ""}`}>
+                <line
+                  x1={isEvil ? "50" : "55"}
+                  y1="115"
+                  x2={isEvil ? "150" : "145"}
+                  y2="115"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </g>
+            </>
+          )}
 
           {/* Moustaches gauche */}
           <line
@@ -448,6 +575,38 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       {/* CRT overlay effects */}
       <div className="crt-overlay"></div>
       <div className="crt-flicker"></div>
+
+      {/* Dilemma Interface - Full Screen */}
+      {isEvil && isChatOpen && showChoices && currentDilemmaIndex < dilemmas.length && (
+        <div className={`dilemma-overlay ${dilemmaShock ? "glitch-active" : ""}`}>
+          {/* Question at top */}
+          <div className="dilemma-question">
+            <span className="dilemma-number">DILEMME {currentDilemmaIndex + 1}/{dilemmas.length}</span>
+            <p className="dilemma-text">{dilemmas[currentDilemmaIndex].description}</p>
+          </div>
+
+          {/* Choices left and right */}
+          <div className={`dilemma-choices ${selectedChoice ? "choice-made" : ""}`}>
+            <button
+              className={`dilemma-choice dilemma-choice-left ${selectedChoice === dilemmas[currentDilemmaIndex].choices[0].id ? "selected" : ""} ${selectedChoice && selectedChoice !== dilemmas[currentDilemmaIndex].choices[0].id ? "not-selected" : ""}`}
+              onClick={() => !selectedChoice && handleChoiceSelect(dilemmas[currentDilemmaIndex].choices[0])}
+              disabled={!!selectedChoice}
+            >
+              <span className="choice-label">A</span>
+              <span className="choice-text">{dilemmas[currentDilemmaIndex].choices[0].description}</span>
+            </button>
+
+            <button
+              className={`dilemma-choice dilemma-choice-right ${selectedChoice === dilemmas[currentDilemmaIndex].choices[1].id ? "selected" : ""} ${selectedChoice && selectedChoice !== dilemmas[currentDilemmaIndex].choices[1].id ? "not-selected" : ""}`}
+              onClick={() => !selectedChoice && handleChoiceSelect(dilemmas[currentDilemmaIndex].choices[1])}
+              disabled={!!selectedChoice}
+            >
+              <span className="choice-label">B</span>
+              <span className="choice-text">{dilemmas[currentDilemmaIndex].choices[1].description}</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

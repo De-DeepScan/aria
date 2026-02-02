@@ -1,0 +1,53 @@
+<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg" width="400" height="360">
+
+  <!-- Tête - Mode Evil (oreilles plus pointues) -->
+  <path
+    d="M 35 110
+       L 15 55 L 55 80
+       Q 100 60, 145 80
+       L 185 55 L 165 110
+       C 175 140, 145 175, 100 175
+       C 55 175, 25 140, 35 110 Z"
+    fill="none"
+    stroke="#ff0000"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Oeil unique - plus étroit en mode Evil -->
+  <g>
+    <path
+      d="M 50 115
+         Q 65 105, 100 100
+         Q 135 105, 150 115
+         Q 135 125, 100 130
+         Q 65 125, 50 115 Z"
+      fill="none"
+      stroke="#ff0000"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <!-- Pupille verticale -->
+    <line
+      x1="100"
+      y1="103"
+      x2="100"
+      y2="127"
+      stroke="#ff0000"
+      stroke-width="3"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Moustaches gauche (plus agressives) -->
+  <line x1="-10" y1="95" x2="45" y2="115" stroke="#ff0000" stroke-width="2" stroke-linecap="round"/>
+  <line x1="-15" y1="120" x2="45" y2="120" stroke="#ff0000" stroke-width="2" stroke-linecap="round"/>
+  <line x1="-10" y1="145" x2="45" y2="135" stroke="#ff0000" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Moustaches droite (plus agressives) -->
+  <line x1="155" y1="115" x2="210" y2="95" stroke="#ff0000" stroke-width="2" stroke-linecap="round"/>
+  <line x1="155" y1="120" x2="215" y2="120" stroke="#ff0000" stroke-width="2" stroke-linecap="round"/>
+  <line x1="155" y1="135" x2="210" y2="145" stroke="#ff0000" stroke-width="2" stroke-linecap="round"/>
+</svg>
