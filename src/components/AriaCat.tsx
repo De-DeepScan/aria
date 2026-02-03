@@ -72,11 +72,14 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
 
   // Gamemaster integration
   useEffect(() => {
-    // 1. Register with available actions for backoffice
+    // 1. Register with available actions for backoffice (actions sans params = boutons toggle)
     gamemaster.register("aria", "ARIA Cat", [
-      { id: "set_evil", label: "Mode Méchant", params: ["enabled"] },
-      { id: "set_talking", label: "Parler", params: ["enabled"] },
-      { id: "show_dilemma", label: "Afficher Dilemme", params: ["enabled"] },
+      { id: "enable_evil", label: "Activer mode méchant" },
+      { id: "disable_evil", label: "Désactiver mode méchant" },
+      { id: "enable_speaking", label: "Activer parole" },
+      { id: "disable_speaking", label: "Désactiver parole" },
+      { id: "enable_dilemma", label: "Afficher dilemme" },
+      { id: "disable_dilemma", label: "Masquer dilemme" },
       { id: "reset", label: "Réinitialiser" },
     ]);
 
@@ -85,28 +88,33 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
     gamemaster.onDisconnect(() => setConnected(false));
 
     // 3. Handle commands from backoffice
-    gamemaster.onCommand(({ action, payload }) => {
+    gamemaster.onCommand(({ action }) => {
       switch (action) {
-        case "set_evil":
-          setIsEvil(payload.enabled as boolean);
+        case "enable_evil":
+          setIsEvil(true);
           break;
-        case "set_talking":
-          setIsSpeaking(payload.enabled as boolean);
+        case "disable_evil":
+          setIsEvil(false);
           break;
-        case "show_dilemma":
-          if (payload.enabled as boolean) {
-            // Force evil mode and start dilemma
-            setIsEvil(true);
-            setTimeout(() => {
-              setIsChatOpen(true);
-              setShowChoices(true);
-              setDilemmaShock(true);
-              setTimeout(() => setDilemmaShock(false), 800);
-            }, 100);
-          } else {
-            setIsChatOpen(false);
-            setShowChoices(false);
-          }
+        case "enable_speaking":
+          setIsSpeaking(true);
+          break;
+        case "disable_speaking":
+          setIsSpeaking(false);
+          break;
+        case "enable_dilemma":
+          // Force evil mode and start dilemma
+          setIsEvil(true);
+          setTimeout(() => {
+            setIsChatOpen(true);
+            setShowChoices(true);
+            setDilemmaShock(true);
+            setTimeout(() => setDilemmaShock(false), 800);
+          }, 100);
+          break;
+        case "disable_dilemma":
+          setIsChatOpen(false);
+          setShowChoices(false);
           break;
         case "reset":
           setIsEvil(false);
@@ -192,9 +200,9 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            width: { ideal: 320 },
-            height: { ideal: 240 },
-            facingMode: "user"
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: "user",
           },
         });
 
@@ -233,12 +241,12 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
 
       try {
         // Utiliser uniquement TinyFaceDetector (plus rapide)
-        // Paramètres optimisés pour faible luminosité
+        // Paramètres ULTRA permissifs pour faible luminosité sur Mac Mini
         const detection = await faceapi.detectSingleFace(
           video,
           new faceapi.TinyFaceDetectorOptions({
-            inputSize: 96, // Plus petit = plus rapide sur Mac Mini
-            scoreThreshold: 0.15, // Seuil très bas pour faible luminosité
+            inputSize: 160, // Un peu plus grand = meilleure détection
+            scoreThreshold: 0.1, // Seuil très très bas (10%) pour faible luminosité
           })
         );
 
@@ -276,8 +284,8 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
           setPupilOffset({ ...lastDetection });
         } else {
           missedFrames++;
-          // Garder la dernière position plus longtemps (tolérance faible luminosité)
-          if (missedFrames > 15) {
+          // Garder la dernière position TRÈS longtemps (tolérance faible luminosité)
+          if (missedFrames > 30) {
             setFaceDetected(false);
           }
         }
