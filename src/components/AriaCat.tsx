@@ -78,11 +78,23 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
             setShowChoices(true);
             setDilemmaShock(true);
             setTimeout(() => setDilemmaShock(false), 800);
+            // Notifier les autres jeux que l'IA ne doit pas parler
+            gamemaster.socket.emit("game-message", {
+              from: "aria",
+              type: "aria-dilemma",
+              data: { isSpeakingAllowed: false }
+            });
           }, 100);
           break;
         case "disable_dilemma":
           setIsChatOpen(false);
           setShowChoices(false);
+          // Notifier que l'IA peut parler à nouveau
+          gamemaster.socket.emit("game-message", {
+            from: "aria",
+            type: "aria-dilemma",
+            data: { isSpeakingAllowed: true }
+          });
           break;
         case "reset":
           setIsEvil(false);
@@ -111,10 +123,22 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
             setShowChoices(true);
             setDilemmaShock(true);
             setTimeout(() => setDilemmaShock(false), 800);
+            // Notifier les autres jeux que l'IA ne doit pas parler
+            gamemaster.socket.emit("game-message", {
+              from: "aria",
+              type: "aria-dilemma",
+              data: { isSpeakingAllowed: false }
+            });
           }, 100);
         } else {
           setIsChatOpen(false);
           setShowChoices(false);
+          // Notifier que l'IA peut parler à nouveau
+          gamemaster.socket.emit("game-message", {
+            from: "aria",
+            type: "aria-dilemma",
+            data: { isSpeakingAllowed: true }
+          });
         }
       }
     };
@@ -224,19 +248,6 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
     });
   }, [isEvil]);
 
-  // Start dilemma when button is clicked
-  const handleStartDilemmas = () => {
-    if (!isEvil) return;
-    if (currentDilemmaIndex >= dilemmas.length) return; // Plus de dilemmes
-
-    setIsChatOpen(true);
-    setShowChoices(true);
-
-    // Trigger glitch effect
-    setDilemmaShock(true);
-    setTimeout(() => setDilemmaShock(false), 800);
-  };
-
   const handleChoiceSelect = (choice: Choice) => {
     const currentDilemma = dilemmas[currentDilemmaIndex];
     const choiceLabel = choice.id === dilemmas[currentDilemmaIndex].choices[0].id ? "A" : "B";
@@ -262,6 +273,13 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       setShowChoices(false);
       setIsChatOpen(false);
 
+      // Notifier que l'IA peut parler à nouveau
+      gamemaster.socket.emit("game-message", {
+        from: "aria",
+        type: "aria-dilemma",
+        data: { isSpeakingAllowed: true }
+      });
+
       // Reboot animation
       setIsRebooting(true);
       setTimeout(() => setIsRebooting(false), 1500);
@@ -276,38 +294,6 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
 
   return (
     <div className={`aria-container ${isEvil ? "evil" : "good"} ${dilemmaShock ? "glitch-mode" : ""}`}>
-      {/* Bouton parler */}
-      <button
-        className={`speak-btn ${isSpeaking ? "active" : ""} ${isEvil ? "evil" : ""}`}
-        onClick={() => setIsSpeaking(!isSpeaking)}
-      >
-        SPEAK
-      </button>
-
-      {/* Bouton dilemmes (mode Evil uniquement) */}
-      {isEvil && (
-        <button
-          className={`dilemma-btn ${isChatOpen ? "active" : ""}`}
-          onClick={handleStartDilemmas}
-          disabled={isChatOpen}
-        >
-          <span className="dilemma-icon">⚠</span>
-          DILEMMES
-        </button>
-      )}
-
-      {/* Switch mode */}
-      <div className="mode-switch">
-        <span className={`mode-label ${!isEvil ? "active" : ""}`}>GOOD</span>
-        <button
-          className={`switch-btn ${isEvil ? "evil" : ""}`}
-          onClick={() => setIsEvil(!isEvil)}
-        >
-          <span className="switch-slider"></span>
-        </button>
-        <span className={`mode-label ${isEvil ? "active" : ""}`}>EVIL</span>
-      </div>
-
       <div className={`aria-cat-wrapper ${isThinking ? "thinking" : ""} ${isSpeaking ? "speaking" : ""} ${dilemmaShock ? "aria-freeze" : ""} ${isChatOpen ? "dilemma-active" : ""} ${isRebooting ? "rebooting" : ""}`}>
         <svg
           viewBox="0 0 200 180"
@@ -540,17 +526,13 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       <div className="crt-overlay"></div>
       <div className="crt-flicker"></div>
 
-      {/* Connection status indicator */}
-      <div className={`connection-status ${connected ? "connected" : "disconnected"}`}>
-        {connected ? "🟢" : "🔴"}
-      </div>
 
       {/* Dilemma Interface - Full Screen */}
       {isEvil && isChatOpen && showChoices && currentDilemmaIndex < dilemmas.length && (
         <div className={`dilemma-overlay ${dilemmaShock ? "glitch-active" : ""}`}>
           {/* Question at top */}
           <div className="dilemma-question">
-            <span className="dilemma-number">DILEMME {currentDilemmaIndex + 1}/{dilemmas.length}</span>
+            <span className="dilemma-number">DILEMME</span>
             <p className="dilemma-text">{dilemmas[currentDilemmaIndex].description}</p>
           </div>
 
