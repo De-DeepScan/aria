@@ -118,6 +118,36 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
           break;
       }
     });
+
+    // 4. Écouter les messages des autres jeux (Labyrinth, Computer, etc.)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleGameMessage = (message: any) => {
+      // Ignorer ses propres messages
+      if (message.from === "aria") return;
+
+      // Réagir aux dilemmes du Labyrinth
+      if (message.type === "dilemma-showing") {
+        if (message.data?.isShowing) {
+          // Déclencher le mode dilemme sur ARIA
+          setIsEvil(true);
+          setTimeout(() => {
+            setIsChatOpen(true);
+            setShowChoices(true);
+            setDilemmaShock(true);
+            setTimeout(() => setDilemmaShock(false), 800);
+          }, 100);
+        } else {
+          setIsChatOpen(false);
+          setShowChoices(false);
+        }
+      }
+    };
+
+    gamemaster.socket.on("game-message", handleGameMessage);
+
+    return () => {
+      gamemaster.socket.off("game-message", handleGameMessage);
+    };
   }, []);
 
   // Send state updates to backoffice
@@ -203,11 +233,12 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
 
       try {
         // Utiliser uniquement TinyFaceDetector (plus rapide)
+        // Paramètres optimisés pour faible luminosité
         const detection = await faceapi.detectSingleFace(
           video,
           new faceapi.TinyFaceDetectorOptions({
-            inputSize: 128, // Plus petit = plus rapide
-            scoreThreshold: 0.3,
+            inputSize: 96, // Plus petit = plus rapide sur Mac Mini
+            scoreThreshold: 0.15, // Seuil très bas pour faible luminosité
           })
         );
 
@@ -245,8 +276,8 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
           setPupilOffset({ ...lastDetection });
         } else {
           missedFrames++;
-          // Garder la dernière position pendant quelques frames
-          if (missedFrames > 5) {
+          // Garder la dernière position plus longtemps (tolérance faible luminosité)
+          if (missedFrames > 15) {
             setFaceDetected(false);
           }
         }
@@ -311,7 +342,7 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
     return () => clearInterval(interval);
   }, [message]);
 
-  // Reset dilemma when switching modes
+  // Reset dilemma when switching modes + notifier les autres jeux
   useEffect(() => {
     if (!isEvil) {
       setIsChatOpen(false);
@@ -319,6 +350,13 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       setShowChoices(false);
       setUserChoices([]);
     }
+
+    // Notifier les autres jeux (Computer, etc.) du changement de mode
+    gamemaster.socket.emit("game-message", {
+      from: "aria",
+      type: "aria-evil",
+      data: { isEvil }
+    });
   }, [isEvil]);
 
   // Start dilemma when button is clicked
