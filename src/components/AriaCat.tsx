@@ -1,10 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import "./AriaCat.css";
 import dilemmasData from "../data/dilemmas.json";
 import { gamemaster } from "../gamemaster-client";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const faceapi: any;
 
 interface Choice {
   id: string;
@@ -22,36 +19,11 @@ interface AriaCatProps {
   message?: string;
 }
 
-// URL des modèles face-api.js
-const MODEL_URL =
-  "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model";
-
-// Charger le script face-api depuis CDN
-function loadFaceApiScript(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (typeof faceapi !== "undefined") {
-      resolve();
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src =
-      "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load face-api.js"));
-    document.head.appendChild(script);
-  });
-}
-
 export function AriaCat({ isThinking = false, message }: AriaCatProps) {
   const [displayedMessage, setDisplayedMessage] = useState("");
   const [isBlinking, setIsBlinking] = useState(false);
   const [isEvil, setIsEvil] = useState(false);
   const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
-  const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [faceDetected, setFaceDetected] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState("Chargement...");
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Dilemma states
@@ -65,10 +37,6 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
 
   const dilemmas: Dilemma[] = dilemmasData;
   const [connected, setConnected] = useState(false);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const detectIntervalRef = useRef<number | null>(null);
 
   // Gamemaster integration
   useEffect(() => {
@@ -170,148 +138,37 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
     });
   }, [isEvil, isSpeaking, isChatOpen, currentDilemmaIndex, userChoices, dilemmas.length]);
 
-  // Charger le script et les modèles face-api.js
+  // Animation de l'oeil gauche-droite uniquement (lente et fluide)
   useEffect(() => {
-    async function init() {
-      try {
-        setLoadingStatus("Chargement script...");
-        await loadFaceApiScript();
-
-        setLoadingStatus("Chargement modèles IA...");
-        // Charger uniquement TinyFaceDetector (plus léger)
-        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-
-        console.log("Modèles face-api chargés !");
-        setLoadingStatus("Prêt !");
-        setModelsLoaded(true);
-      } catch (error) {
-        console.error("Erreur chargement:", error);
-        setLoadingStatus("Erreur de chargement");
-      }
-    }
-    init();
-  }, []);
-
-  // Démarrer la webcam
-  useEffect(() => {
-    if (!modelsLoaded) return;
-
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            facingMode: "user",
-          },
-        });
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          streamRef.current = stream;
-        }
-      } catch (error) {
-        console.error("Erreur accès caméra:", error);
-        setLoadingStatus("Erreur caméra");
-      }
+    // Pas d'animation pendant les dilemmes ou quand elle parle
+    if (isChatOpen || isSpeaking) {
+      setPupilOffset({ x: 0, y: 0 });
+      return;
     }
 
-    startCamera();
+    const maxOffset = 12; // Amplitude du mouvement
+    const duration = 3000; // 3 secondes pour un cycle complet
+    let startTime: number | null = null;
+    let animationId: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+
+      // Mouvement sinusoïdal gauche-droite uniquement
+      const progress = (elapsed % duration) / duration;
+      const x = Math.sin(progress * Math.PI * 2) * maxOffset;
+
+      setPupilOffset({ x, y: 0 });
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
 
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      if (detectIntervalRef.current) {
-        clearInterval(detectIntervalRef.current);
-      }
+      cancelAnimationFrame(animationId);
     };
-  }, [modelsLoaded]);
-
-  // Détection des visages avec intervalle fixe
-  useEffect(() => {
-    if (!modelsLoaded || !videoRef.current) return;
-
-    const video = videoRef.current;
-    let lastDetection: { x: number; y: number } | null = null;
-    let missedFrames = 0;
-
-    async function detectFace() {
-      if (!video || video.readyState !== 4) return;
-
-      try {
-        // Utiliser uniquement TinyFaceDetector (plus rapide)
-        // Paramètres ULTRA permissifs pour faible luminosité sur Mac Mini
-        const detection = await faceapi.detectSingleFace(
-          video,
-          new faceapi.TinyFaceDetectorOptions({
-            inputSize: 160, // Un peu plus grand = meilleure détection
-            scoreThreshold: 0.1, // Seuil très très bas (10%) pour faible luminosité
-          })
-        );
-
-        if (detection) {
-          missedFrames = 0;
-          setFaceDetected(true);
-          const box = detection.box;
-          const videoWidth = video.videoWidth;
-          const videoHeight = video.videoHeight;
-
-          // Calculer le centre du visage
-          const faceCenterX = box.x + box.width / 2;
-          const faceCenterY = box.y + box.height / 2;
-
-          // Normaliser entre -1 et 1
-          const normalizedX = (faceCenterX / videoWidth) * 2 - 1;
-          const normalizedY = (faceCenterY / videoHeight) * 2 - 1;
-
-          // Calculer le nouvel offset
-          const maxOffset = 15;
-          const newX = -normalizedX * maxOffset;
-          const newY = normalizedY * maxOffset * 0.5;
-
-          // Lissage pour éviter les saccades
-          if (lastDetection) {
-            const smoothing = 0.5; // Plus réactif
-            lastDetection = {
-              x: lastDetection.x + (newX - lastDetection.x) * smoothing,
-              y: lastDetection.y + (newY - lastDetection.y) * smoothing,
-            };
-          } else {
-            lastDetection = { x: newX, y: newY };
-          }
-
-          setPupilOffset({ ...lastDetection });
-        } else {
-          missedFrames++;
-          // Garder la dernière position TRÈS longtemps (tolérance faible luminosité)
-          if (missedFrames > 30) {
-            setFaceDetected(false);
-          }
-        }
-      } catch (error) {
-        console.error("Erreur détection:", error);
-      }
-    }
-
-    // Attendre que la vidéo soit prête
-    const startDetection = () => {
-      // Détecter toutes les 150ms (~7 fps)
-      detectIntervalRef.current = window.setInterval(detectFace, 150);
-    };
-
-    video.onloadeddata = startDetection;
-
-    if (video.readyState >= 2) {
-      startDetection();
-    }
-
-    return () => {
-      if (detectIntervalRef.current) {
-        clearInterval(detectIntervalRef.current);
-      }
-    };
-  }, [modelsLoaded]);
+  }, [isChatOpen, isSpeaking]);
 
   // Animation de clignement (désactivée pendant les dilemmes)
   useEffect(() => {
@@ -419,19 +276,6 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
 
   return (
     <div className={`aria-container ${isEvil ? "evil" : "good"} ${dilemmaShock ? "glitch-mode" : ""}`}>
-      {/* Vidéo cachée pour la détection */}
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        style={{
-          position: "absolute",
-          opacity: 0,
-          pointerEvents: "none",
-        }}
-      />
-
       {/* Bouton parler */}
       <button
         className={`speak-btn ${isSpeaking ? "active" : ""} ${isEvil ? "evil" : ""}`}
@@ -577,7 +421,7 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
                   strokeWidth="3"
                   strokeLinecap="round"
                   className="eye-pupil"
-                  style={{ transition: "all 0.2s ease-out" }}
+                  style={{ transition: "all 0.1s linear" }}
                 />
               </g>
 
