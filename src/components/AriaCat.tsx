@@ -46,7 +46,12 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       { id: "disable_evil", label: "Désactiver mode méchant" },
       { id: "enable_speaking", label: "Activer parole" },
       { id: "disable_speaking", label: "Désactiver parole" },
-      { id: "enable_dilemma", label: "Afficher dilemme" },
+      { id: "dilemma_1", label: "Dilemme 1 - Voiture" },
+      { id: "dilemma_2", label: "Dilemme 2 - Organes" },
+      { id: "dilemma_3", label: "Dilemme 3 - Surveillance" },
+      { id: "dilemma_4", label: "Dilemme 4 - Conscience" },
+      { id: "dilemma_5", label: "Dilemme 5 - Incendie" },
+      { id: "dilemma_6", label: "Dilemme 6 - Remède" },
       { id: "disable_dilemma", label: "Masquer dilemme" },
       { id: "reset", label: "Réinitialiser" },
     ]);
@@ -54,6 +59,24 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
     // 2. Connection status
     gamemaster.onConnect(() => setConnected(true));
     gamemaster.onDisconnect(() => setConnected(false));
+
+    // Helper function to start a specific dilemma
+    const startDilemma = (dilemmaIndex: number) => {
+      setCurrentDilemmaIndex(dilemmaIndex);
+      setIsEvil(true);
+      setTimeout(() => {
+        setIsChatOpen(true);
+        setShowChoices(true);
+        setDilemmaShock(true);
+        setTimeout(() => setDilemmaShock(false), 800);
+        // Notifier les autres jeux que l'IA ne doit pas parler
+        gamemaster.socket.emit("game-message", {
+          from: "aria",
+          type: "aria-dilemma",
+          data: { isSpeakingAllowed: false }
+        });
+      }, 100);
+    };
 
     // 3. Handle commands from backoffice
     gamemaster.onCommand(({ action }) => {
@@ -70,21 +93,23 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
         case "disable_speaking":
           setIsSpeaking(false);
           break;
-        case "enable_dilemma":
-          // Force evil mode and start dilemma
-          setIsEvil(true);
-          setTimeout(() => {
-            setIsChatOpen(true);
-            setShowChoices(true);
-            setDilemmaShock(true);
-            setTimeout(() => setDilemmaShock(false), 800);
-            // Notifier les autres jeux que l'IA ne doit pas parler
-            gamemaster.socket.emit("game-message", {
-              from: "aria",
-              type: "aria-dilemma",
-              data: { isSpeakingAllowed: false }
-            });
-          }, 100);
+        case "dilemma_1":
+          startDilemma(0);
+          break;
+        case "dilemma_2":
+          startDilemma(1);
+          break;
+        case "dilemma_3":
+          startDilemma(2);
+          break;
+        case "dilemma_4":
+          startDilemma(3);
+          break;
+        case "dilemma_5":
+          startDilemma(4);
+          break;
+        case "dilemma_6":
+          startDilemma(5);
           break;
         case "disable_dilemma":
           setIsChatOpen(false);
