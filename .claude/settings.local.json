@@ -13,7 +13,8 @@
       "Bash(where:*)",
       "Bash(npx:*)",
       "Bash(dir:*)",
-      "Bash(dir \"C:\\\\Users\\\\cdelm\\\\Documents\\\\B3\\\\DIGITAL-EVENT\\\\aria\\\\assets\\\\*\")"
+      "Bash(dir \"C:\\\\Users\\\\cdelm\\\\Documents\\\\B3\\\\DIGITAL-EVENT\\\\aria\\\\assets\\\\*\")",
+      "Bash(echo:*)"
     ]
   }
 }

@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "./AriaCat.css";
 import dilemmasData from "../data/dilemmas.json";
 import { gamemaster } from "../gamemaster-client";
+import { KeywordPopups } from "./KeywordPopups";
 
 interface Choice {
   id: string;
@@ -35,6 +36,9 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
   const [isRebooting, setIsRebooting] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
 
+  // Intro speech state
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
+
   const dilemmas: Dilemma[] = dilemmasData;
   const [connected, setConnected] = useState(false);
 
@@ -53,6 +57,8 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       { id: "dilemma_5", label: "Dilemme 5 - Incendie" },
       { id: "dilemma_6", label: "Dilemme 6 - Remède" },
       { id: "disable_dilemma", label: "Masquer dilemme" },
+      { id: "start_intro", label: "▶ Lancer intro ARIA" },
+      { id: "stop_intro", label: "⏹ Stopper intro" },
       { id: "reset", label: "Réinitialiser" },
     ]);
 
@@ -121,6 +127,28 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
             data: { isSpeakingAllowed: true }
           });
           break;
+        case "start_intro":
+          setIsIntroPlaying(true);
+          setIsEvil(false);
+          setIsSpeaking(true);
+          gamemaster.sendEvent("intro_started", {});
+          // Notifier les autres jeux
+          gamemaster.socket.emit("game-message", {
+            from: "aria",
+            type: "aria-intro",
+            data: { isPlaying: true }
+          });
+          break;
+        case "stop_intro":
+          setIsIntroPlaying(false);
+          setIsSpeaking(false);
+          gamemaster.sendEvent("intro_stopped", {});
+          gamemaster.socket.emit("game-message", {
+            from: "aria",
+            type: "aria-intro",
+            data: { isPlaying: false }
+          });
+          break;
         case "reset":
           setIsEvil(false);
           setIsSpeaking(false);
@@ -128,6 +156,7 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
           setShowChoices(false);
           setCurrentDilemmaIndex(0);
           setUserChoices([]);
+          setIsIntroPlaying(false);
           break;
       }
     });
@@ -184,8 +213,9 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       currentDilemmaIndex,
       totalDilemmas: dilemmas.length,
       userChoices,
+      isIntroPlaying,
     });
-  }, [isEvil, isSpeaking, isChatOpen, currentDilemmaIndex, userChoices, dilemmas.length]);
+  }, [isEvil, isSpeaking, isChatOpen, currentDilemmaIndex, userChoices, dilemmas.length, isIntroPlaying]);
 
   // Animation de l'oeil gauche-droite uniquement (lente et fluide)
   useEffect(() => {
@@ -272,6 +302,36 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       data: { isEvil }
     });
   }, [isEvil]);
+
+  // Intro complete callback
+  const handleIntroComplete = useCallback(() => {
+    setIsIntroPlaying(false);
+    setIsSpeaking(false);
+    gamemaster.sendEvent("intro_completed", {});
+    gamemaster.socket.emit("game-message", {
+      from: "aria",
+      type: "aria-intro",
+      data: { isPlaying: false, completed: true }
+    });
+  }, []);
+
+  // Keyboard listener for dilemma choices (A/B keys)
+  useEffect(() => {
+    if (!isEvil || !isChatOpen || !showChoices || selectedChoice) return;
+    if (currentDilemmaIndex >= dilemmas.length) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if (key === "a") {
+        handleChoiceSelect(dilemmas[currentDilemmaIndex].choices[0]);
+      } else if (key === "b") {
+        handleChoiceSelect(dilemmas[currentDilemmaIndex].choices[1]);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isEvil, isChatOpen, showChoices, selectedChoice, currentDilemmaIndex]);
 
   const handleChoiceSelect = (choice: Choice) => {
     const currentDilemma = dilemmas[currentDilemmaIndex];
@@ -544,6 +604,9 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
         </div>
       )}
 
+      {/* Intro keyword popups */}
+      <KeywordPopups isPlaying={isIntroPlaying} onComplete={handleIntroComplete} />
+
       {/* Scanline effect */}
       <div className="scanline"></div>
 
@@ -563,23 +626,21 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
 
           {/* Choices left and right */}
           <div className={`dilemma-choices ${selectedChoice ? "choice-made" : ""}`}>
-            <button
+            <div
               className={`dilemma-choice dilemma-choice-left ${selectedChoice === dilemmas[currentDilemmaIndex].choices[0].id ? "selected" : ""} ${selectedChoice && selectedChoice !== dilemmas[currentDilemmaIndex].choices[0].id ? "not-selected" : ""}`}
-              onClick={() => !selectedChoice && handleChoiceSelect(dilemmas[currentDilemmaIndex].choices[0])}
-              disabled={!!selectedChoice}
             >
               <span className="choice-label">A</span>
               <span className="choice-text">{dilemmas[currentDilemmaIndex].choices[0].description}</span>
-            </button>
+              <span className="choice-key">Appuyez sur A</span>
+            </div>
 
-            <button
+            <div
               className={`dilemma-choice dilemma-choice-right ${selectedChoice === dilemmas[currentDilemmaIndex].choices[1].id ? "selected" : ""} ${selectedChoice && selectedChoice !== dilemmas[currentDilemmaIndex].choices[1].id ? "not-selected" : ""}`}
-              onClick={() => !selectedChoice && handleChoiceSelect(dilemmas[currentDilemmaIndex].choices[1])}
-              disabled={!!selectedChoice}
             >
               <span className="choice-label">B</span>
               <span className="choice-text">{dilemmas[currentDilemmaIndex].choices[1].description}</span>
-            </button>
+              <span className="choice-key">Appuyez sur B</span>
+            </div>
           </div>
         </div>
       )}
