@@ -123,6 +123,7 @@ export class GamemasterAudio {
 
   register(): void {
     if (this.config.enabled) {
+      console.log("[gamemaster:audio] Registering as audio player");
       this.socket.emit("register-audio-player", {});
     }
   }
@@ -218,6 +219,7 @@ export class GamemasterAudio {
 
   private setupListeners(): void {
     const s = this.socket;
+    console.log("[gamemaster:audio] Setting up listeners");
 
     // --- Ambient ---
 
@@ -395,10 +397,16 @@ export class GamemasterAudio {
     // --- Ducking (lower ambient when TTS plays) ---
 
     s.on("audio:duck-ambient", (data: { factor: number }) => {
-      if (this.isDucked) return; // Already ducked
+      console.log("[gamemaster:audio] DUCK EVENT RECEIVED", data);
+      if (this.isDucked) {
+        console.log("[gamemaster:audio] Already ducked, ignoring");
+        return;
+      }
       this.isDucked = true;
       const factor = data.factor ?? 0.8;
       this.log("Duck all audio by factor:", factor);
+      console.log("[gamemaster:audio] Presets count:", this.presetAudios.size);
+      console.log("[gamemaster:audio] Ambients count:", this.ambientAudios.size);
 
       // Save and reduce ambient volumes
       for (const [soundId, audio] of this.ambientAudios) {
