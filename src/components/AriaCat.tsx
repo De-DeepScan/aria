@@ -615,20 +615,6 @@ export function AriaCat({ isThinking = false, message }: AriaCatProps) {
       {/* Intro keyword popups */}
       <KeywordPopups isPlaying={isIntroPlaying} onComplete={handleIntroComplete} />
 
-      {/* Test button for intro */}
-      {!isIntroPlaying && (
-        <button
-          className="intro-test-btn"
-          onClick={() => {
-            setIsIntroPlaying(true);
-            setIsEvil(false);
-            setIsSpeaking(true);
-          }}
-        >
-          TEST INTRO
-        </button>
-      )}
-
       {/* Scanline effect */}
       <div className="scanline"></div>
 
