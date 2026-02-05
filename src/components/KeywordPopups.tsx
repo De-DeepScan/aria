@@ -22,18 +22,18 @@ const ARIA_WORDS = [
 ];
 
 // Timing per row (seconds relative to intro start):
-// t=0.0  → popup appears with all 4 letters visible
-// t=0.8  → A expands to "Autonomous"
-// t=1.6  → R expands to "Reasoning"
-// t=2.4  → I expands to "Intelligence"
-// t=3.2  → A expands to "Architecture"
-// t=5.0  → popup starts fading
-// t=5.8  → popup gone
-const POPUP_START = 0;
-const ROW_EXPAND_INTERVAL = 0.8;  // delay between each row expanding
-const FIRST_EXPAND = 0.8;         // when first row expands
-const POPUP_FADE = 5.0;           // when the whole popup fades
-const POPUP_GONE = 5.8;           // when it's removed
+// t=4.0  → popup appears with all 4 letters visible
+// t=4.5  → A expands to "Autonomous"
+// t=5.0  → R expands to "Reasoning"
+// t=5.5  → I expands to "Intelligence"
+// t=6.0  → A expands to "Architecture"
+// t=7.5  → popup starts fading
+// t=8.3  → popup gone
+const POPUP_START = 4.0;
+const ROW_EXPAND_INTERVAL = 0.5;  // delay between each row expanding
+const FIRST_EXPAND = 4.5;         // when first row expands
+const POPUP_FADE = 7.5;           // when the whole popup fades
+const POPUP_GONE = 8.3;           // when it's removed
 
 function AcronymReveal({ elapsedSec }: { elapsedSec: number }) {
   if (elapsedSec < POPUP_START || elapsedSec > POPUP_GONE) return null;
@@ -65,12 +65,12 @@ function AcronymReveal({ elapsedSec }: { elapsedSec: number }) {
    Single popup on the left: "3 PILIERS" title,
    then ANALYSE / PRÉDICTION / ACTION one by one.
    ============================================ */
-const PILLARS = ["ANALYSE", "PRÉDICTION", "ACTION"];
-const PILLARS_START = 37;       // when the popup appears (speech timestamp)
-const PILLAR_FIRST = 39;        // when first pillar shows
-const PILLAR_INTERVAL = 1;      // seconds between each pillar
-const PILLARS_FADE = 43;        // when the popup fades
-const PILLARS_GONE = 43.8;      // when it's removed
+const PILLARS = ["ANALYSE COGNITIVE", "SURVEILLANCE ADAPTATIVE", "INTERCONNEXION", "DÉCISION AUTONOME"];
+const PILLARS_START = 31;       // when the popup appears (speech timestamp)
+const PILLAR_FIRST = 32;        // when first pillar shows
+const PILLAR_INTERVAL = 2.5;    // seconds between each pillar
+const PILLARS_FADE = 42;        // when the popup fades
+const PILLARS_GONE = 43;        // when it's removed
 
 function PillarsReveal({ elapsedSec }: { elapsedSec: number }) {
   if (elapsedSec < PILLARS_START || elapsedSec > PILLARS_GONE) return null;
@@ -79,7 +79,7 @@ function PillarsReveal({ elapsedSec }: { elapsedSec: number }) {
 
   return (
     <div className={`keyword-popup keyword-center-left pillars-popup ${isFading ? "keyword-fading" : ""}`}>
-      <span className="pillars-title">3 PILIERS</span>
+      <span className="pillars-title">CAPACITÉS</span>
       {PILLARS.map((pillar, i) => {
         const showTime = PILLAR_FIRST + i * PILLAR_INTERVAL;
         const isVisible = elapsedSec >= showTime;
