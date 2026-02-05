@@ -74,6 +74,10 @@ export class GamemasterAudio {
 
   private visibilityHandler: (() => void) | null = null;
 
+  // Ducking state: saved volumes before ducking
+  private isDucked = false;
+  private savedAmbientVolumes = new Map<string, number>();
+
   constructor(socket: Socket, backofficeUrl: string) {
     this.socket = socket;
     this.baseUrl = backofficeUrl;
@@ -162,6 +166,8 @@ export class GamemasterAudio {
     this.socket.off("audio:master-volume");
     this.socket.off("audio:volume-ia");
     this.socket.off("audio:stop-all");
+    this.socket.off("audio:duck-ambient");
+    this.socket.off("audio:unduck-ambient");
   }
 
   // =====================
@@ -382,6 +388,36 @@ export class GamemasterAudio {
     s.on("audio:stop-all", () => {
       this.log("Stop all audio");
       this.stopAll();
+    });
+
+    // --- Ducking (lower ambient when TTS plays) ---
+
+    s.on("audio:duck-ambient", (data: { factor: number }) => {
+      if (this.isDucked) return; // Already ducked
+      this.isDucked = true;
+      const factor = data.factor ?? 0.8;
+      this.log("Duck ambient by factor:", factor);
+
+      // Save current volumes and reduce
+      for (const [soundId, audio] of this.ambientAudios) {
+        this.savedAmbientVolumes.set(soundId, audio.volume);
+        audio.volume = Math.min(1, audio.volume * factor);
+      }
+    });
+
+    s.on("audio:unduck-ambient", () => {
+      if (!this.isDucked) return; // Not ducked
+      this.isDucked = false;
+      this.log("Unduck ambient - restoring volumes");
+
+      // Restore saved volumes
+      for (const [soundId, savedVolume] of this.savedAmbientVolumes) {
+        const audio = this.ambientAudios.get(soundId);
+        if (audio) {
+          audio.volume = savedVolume;
+        }
+      }
+      this.savedAmbientVolumes.clear();
     });
   }
 }
